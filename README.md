@@ -1,4 +1,4 @@
 # jost
-Files supporting paper about Jostedalsbreen ice cap by Åkesson et al.
+Files supporting the paper about Jostedalsbreen ice cap by Åkesson et al.
 
 Reference:
