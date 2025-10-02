@@ -1,1 +1,236 @@
+isloadsmb=0;
+isvelschellenberger=1;
+
+%Friction settings
+isfrictionsurfaceslope=1; %first guess for friction coeff based on surface slope and effective pressure
+isfrictionelevation=0; %firest guess for friction coeff based on elevation
+
+disp('   Interpolating mask');
+md.mask.ice_levelset         = -1*ones(md.mesh.numberofvertices,1);
+md.mask.ocean_levelset = +1*ones(md.mesh.numberofvertices,1);
+% pos = find(mask<1); %we also want a bit of ice where there are rocks
+
+disp('   Set Pressure');
+md.initialization.pressure=md.materials.rho_ice*md.constants.g*md.geometry.thickness;
+
+disp('   Reading velocities ');
+% vx
+%Load Millan
+	tiffname = './Data/velocity/millan_2022_velx_32N.tif';
+    info = geotiffinfo(tiffname);
+    [velObs,R] = geotiffread(tiffname);
+    velObs=double(velObs);
+	R = refmatToMapRasterReference(info.RefMatrix, [info.Height info.Width]);
+   [TIFFx,TIFFy] = worldGrid(R,'gridvectors');
+    [xUTM,yUTM] = meshgrid(TIFFx,TIFFy);
+
+	%Interpolate velocity data onto mesh
+	md.inversion.vx_obs=InterpFromGrid(TIFFx,TIFFy,velObs,double(md.mesh.x),double(md.mesh.y));
+	vx_obs_millan=md.inversion.vx_obs;
+
+if isvelschellenberger,
+
+% Load Schellenberger
+	tiffname = './Data/velocity/schellenberger_1996_merge_SN_x.tif';
+    info = geotiffinfo(tiffname);
+    [velObs,R] = geotiffread(tiffname);
+    velObs=double(velObs);
+	 velObs=velObs*365.25; %convert m/day to m/year
+	R = refmatToMapRasterReference(info.RefMatrix, [info.Height info.Width]);
+   [TIFFx,TIFFy] = worldGrid(R,'gridvectors');
+    [xUTM,yUTM] = meshgrid(TIFFx,TIFFy);
+
+	vx_obs_schell=InterpFromGrid(TIFFx,TIFFy,velObs,double(md.mesh.x),double(md.mesh.y));
+end
+
+% vy
+%Load Millan
+	tiffname = './Data/velocity/millan_2022_vely_32N.tif';
+    info = geotiffinfo(tiffname);
+    [velObs,R] = geotiffread(tiffname);
+    velObs=double(velObs);
+	R = refmatToMapRasterReference(info.RefMatrix, [info.Height info.Width]);
+   [TIFFx,TIFFy] = worldGrid(R,'gridvectors');
+    [xUTM,yUTM] = meshgrid(TIFFx,TIFFy);
+
+	%Interpolate velocity data onto mesh
+	md.inversion.vy_obs=InterpFromGrid(TIFFx,TIFFy,velObs,double(md.mesh.x),double(md.mesh.y));
+	vy_obs_millan=md.inversion.vy_obs;
+
+if isvelschellenberger,
+% Load Schellenberger
+	tiffname = './Data/velocity/schellenberger_1996_merge_SN_y.tif';
+    info = geotiffinfo(tiffname);
+    [velObs,R] = geotiffread(tiffname);
+    velObs=double(velObs);
+	 velObs=velObs*365.25; %convert m/day to m/year
+	R = refmatToMapRasterReference(info.RefMatrix, [info.Height info.Width]);
+   [TIFFx,TIFFy] = worldGrid(R,'gridvectors');
+    [xUTM,yUTM] = meshgrid(TIFFx,TIFFy);
+	vy_obs_schell=InterpFromGrid(TIFFx,TIFFy,velObs,double(md.mesh.x),double(md.mesh.y));
+
+end
+
+	clear velObs TIFFx TIFFy xUTM yUTM
+
+% 	%Find areas of low surface slope and/or high elevation, and use Schellenberger there
+% 	[sx,sy,s]=slope(md);
+% 	sslope=averaging(md,s,10);
+% 	pos=find(sslope<0.07);
+% 	md.inversion.vx_obs(pos)=vx_obs_schell(pos);
+% 	md.inversion.vy_obs(pos)=vy_obs_schell(pos);
+% 	md.inversion.vel_obs= sqrt(md.inversion.vx_obs.^2+md.inversion.vy_obs.^2);
+
+	%Fix no-data areas
+	pos=find(md.inversion.vy_obs<-5000);
+	md.inversion.vx_obs(pos)=vx_obs_millan(pos);
+	md.inversion.vy_obs(pos)=vy_obs_millan(pos);
+	md.inversion.vel_obs= sqrt(md.inversion.vx_obs.^2+md.inversion.vy_obs.^2);
+
+	pos=find(isnan(md.inversion.vx_obs) | isnan(md.inversion.vy_obs));
+	md.inversion.vx_obs(pos)=0;
+	md.inversion.vy_obs(pos)=0;
+% 	pos=find(md.inversion.vy_obs==0);
+% 	md.inversion.vx_obs(pos)=vx_obs_millan(pos);
+% 	md.inversion.vy_obs(pos)=vy_obs_millan(pos);
+	md.inversion.vel_obs  = sqrt(md.inversion.vx_obs.^2+md.inversion.vy_obs.^2);
+	md.initialization.vx  = md.inversion.vx_obs;
+	md.initialization.vy  = md.inversion.vy_obs;
+	md.initialization.vz  = zeros(md.mesh.numberofvertices,1);
+	md.initialization.vel = md.inversion.vel_obs;
+
+%Basal friction
+disp('   Initialize basal friction using driving stress');
+disp('      -- Compute surface slopes and use 10 L2 projections');
+[sx,sy,s]=slope(md); sslope=averaging(md,s,10);
+
+disp('      -- Process surface velocity data');
+vel = md.inversion.vel_obs;
+flags=(vel==0); pos1=find(flags); pos2=find(~flags);
+vel(pos1) = griddata(md.mesh.x(pos2),md.mesh.y(pos2),vel(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
+vel=max(vel,0.1);
+
+disp('      -- Calculate effective pressure');
+Neff = md.materials.rho_ice*md.geometry.thickness+md.materials.rho_water*md.geometry.base;
+Neff(find(Neff<=0))=1;
+
+disp('      -- Deduce friction coefficient');
+if isfrictionsurfaceslope, %first guess for friction coeff based on surface slope and effective pressure
+	md.friction.coefficient=sqrt(md.materials.rho_ice*md.geometry.thickness.*(sslope)./(Neff.*vel/md.constants.yts));
+elseif isfrictionelevation, %firest guess for friction coeff based on elevation
+	%first guess
+	z_max=2200; %m asl
+	beta_max=200; %max friction coeff
+	md.friction.coefficient = (min(max(0,md.geometry.base+500),z_max)/z_max).*beta_max;
+% 	md.friction.coefficient=80*ones(md.mesh.numberofelements,1);
+	md.friction.coefficient=min(md.friction.coefficient,400); %default Mathieu: 400
+else
+	md.friction.coefficient=80*ones(md.mesh.numberofelements,1);
+end
+
+md.friction.p = ones(md.mesh.numberofelements,1);
+md.friction.q = ones(md.mesh.numberofelements,1);
+
+% disp('      -- Extrapolate on ice free regions');
+% flags=(md.mask.ice_levelset>0); pos1=find(flags); pos2=find(~flags);
+% md.friction.coefficient(pos1) = griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
+% pos=find(isnan(md.friction.coefficient));
+% md.friction.coefficient(pos)  = 1;
+
+%flow law
+md.materials.rheology_n = 3*ones(md.mesh.numberofelements,1);
+ice_temp=0; % C
+disp(['   Creating flow law parameters (assume ice is at ' num2str(ice_temp) ' °C)']);
+md.materials.rheology_B = cuffey(273.15 + ice_temp)*ones(md.mesh.numberofvertices,1);
+md.materials.rheology_law = 'Cuffey';
+clear ice_temp
+
+if isloadsmb,
+	disp('   Loading SMB rates from Kamilla');
+	ismonthlysmb=1;
+
+	if ismonthlysmb,
+		%%% 100m model data %%%
+		ncdata	='./Data/SMB/monthly_ref_smb_JOB_100m_1960_2020_UTM32.nc';
+		xdata		= double(ncread(ncdata,'X'));
+		ydata		= double(ncread(ncdata,'Y'));
+		smbdata	= double(ncread(ncdata,'mb_monthly'));
+	% 	year_month	= double(ncread(ncdata,'year_month')); %dont nead to read this, create this array below instead
+	else
+		%%% 1km model data %%%
+		% ncdata	='./Data/SMB/mba_distr_JOB_1km_1957_2020_utm32.nc';
+		% % X33N		= double(ncread(ncdata,'X'));
+		% % Y33N		= double(ncread(ncdata,'Y'));
+		% xdata		= double(ncread(ncdata,'X'));
+		% ydata		= double(ncread(ncdata,'Y'));
+		% smbdata	= double(ncread(ncdata,'__xarray_dataarray_variable__'));
+		% years		= double(ncread(ncdata,'year'));
+	end
+
+
+	%Interp SMB onto model mesh
+	% smbdata=fliplr(smbdata);
+	nmonths=length(smbdata); %length = 732 (monthly data: 1960-2020)
+	nyrs=nmonths/12; %calculate number of years = 61
+	smb=NaN(md.mesh.numberofvertices,nmonths);
+
+	%Fill in SMB data for each year or month
+	for i=1:nmonths
+		smb(:,i) = InterpFromGrid(xdata,ydata,squeeze(smbdata(:,:,i))',md.mesh.x,md.mesh.y); %works
+	end
+
+	%Insert SMB as model forcing
+	if ismonthlysmb,
+		%% monthly %%
+
+		%setup arrays with model forcing times, with monthly forcing for each year
+		forcingtimes=[];
+		for i=1:nyrs
+			for j=1:12
+				forcingtime=i-1+j/12;
+				forcingtimes=[forcingtimes forcingtime];
+			end
+		end
+	% 	years=modelmonths/
+		smb=smb/1000; %convert from mm to m w.e.
+		smb=smb*md.materials.rho_water/md.materials.rho_ice; % convert to ice eq.
+		md.smb.mass_balance=NaN(md.mesh.numberofvertices+1,nmonths);
+		md.smb.mass_balance(1:end-1,:)=smb;
+		md.smb.mass_balance(end,:)=forcingtimes;
+	else
+		%% yearly %%
+		startyear=years(1)-1;
+		modelyears=years-startyear;
+		smb=smb*md.materials.rho_water/md.materials.rho_ice; % convert to ice eq.
+		md.smb.mass_balance=NaN(md.mesh.numberofvertices+1,nyrs);
+		md.smb.mass_balance(1:end-1,:)=smb;
+		md.smb.mass_balance(end,:)=modelyears;
+	end
+
+
+	clear X_33N Y_33N smbdata years startyear modelyears
+end
+
+disp('   Set basal forcings and grounding line migration');
+md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
+md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
+
+disp('   Set other boundary conditions');
+md.masstransport.spcthickness    = NaN(md.mesh.numberofvertices,1);
+disp('   Set domain boundary as ice front position');
+md.mask.ice_levelset(md.mesh.vertexonboundary==1)=0;
+
+%Deal with boundary conditions:
+disp('   Set Boundary conditions');
+md.stressbalance.spcvx=NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvy=NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvz=NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.referential=NaN*ones(md.mesh.numberofvertices,6);
+md.stressbalance.loadingforce=0*ones(md.mesh.numberofvertices,3);
+pos=find((md.mask.ice_levelset<0).*(md.mesh.vertexonboundary));
+md.stressbalance.spcvx(pos)=md.initialization.vx(pos);
+md.stressbalance.spcvy(pos)=md.initialization.vy(pos);
+md.stressbalance.spcvz(pos)=0;
+
+
 
