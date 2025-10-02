@@ -50,4 +50,16 @@ The .exp files have the format
 # X pos Y pos
 383055.7773288192 6843732.3558886303
 386674.9498249681 6847544.2450076826
-388192.2207827155 6848420.7355066249```
+388192.2207827155 6848420.7355066249
+```
+## Videos of future evolution
+The following animations are supplied along with the article, and can be downloaded from the videos folder (permalink https://doi.org/10.5281/zenodo.14764904.800)
+
+– Supplementary video 1: Modelled ice-thickness evolution 2021–2100 (ECEARTH/CCLM, RCP4.5).
+
+– Supplementary video 2: Modelled ice-thickness evolution 2021–2100 (ECEARTH/CCLM, RCP8.5).
+
+– Supplementary video 3: Modelled ice-thickness evolution 2101–2300 (Commit4.5).
+
+– Supplementary video 4: Modelled ice-thickness evolution 2101–2300 (Commit8.5). 
+
