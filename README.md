@@ -44,6 +44,7 @@ Coordinates are given in UTM format. The projection is UTM32N.
 The .exp files have the format
 
 ```## Name:Jost
+## Name:Domain
 ## Icon:0
 # Points Count Value
 84 1.000000
