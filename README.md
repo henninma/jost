@@ -8,8 +8,8 @@ Please contact the corresponding author Henning Åkesson (henning.akesson [at] g
 ## Overview
 This repository contains code used to prepare and launch simulations of Jostedalsbreen ice cap in Norway, using the 'Ice-sheet and Sea-level System Model' (ISSM). The model code needed to run such simulations is freely available at https://issm.jpl.nasa.gov/download/.
 
-## Matlab requirements
-The scripts have been run on Matlab R2024a and R2024b, but should work on other versions as well.
+## Software requirements
+The scripts have been run on Matlab R2024a and R2024b, but should work on other versions as well. You will also need a working Python installation, anything Python 2.8 or newer should work.
 
 ## Other requirements
 To be able to launch the scripts included here, the user must first download and compile the model code of the 'Ice-sheet and Sea-level System Model' (ISSM) at https://issm.jpl.nasa.gov/download/.
@@ -35,7 +35,13 @@ Handles writing of surface mass balance to netcdf, needed during the coupling pr
 Handles the coupling of surface mass balance to ice dynamics (evolving geometry).
 
 - Coupling/Downscaling/downscale_smb_spline_future.py -
-Handles downscaling of reference surface mass balance to the current ice geometry during the coupling. 
+Handles downscaling of reference surface mass balance to the current ice geometry during the coupling in future simulations.
+
+- Coupling/Downscaling/downscale_smb_spline.py -
+Handles downscaling of reference surface mass balance to the current ice geometry during the coupling in historical simulations.
+
+- Coupling/Downscaling/base_files/ -
+Datasets needed during the downscaling of surface mass balance. For details, see readme file within this directory. 
 
 - .exp files -
 Contain coordinates delineating the model domain, as well as some areas
