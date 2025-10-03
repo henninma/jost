@@ -9,7 +9,7 @@ Please contact the corresponding author Henning Åkesson (henning.akesson [at] g
 This repository contains code used to prepare and launch simulations of Jostedalsbreen ice cap in Norway, using the 'Ice-sheet and Sea-level System Model' (ISSM). The model code needed to run such simulations is freely available at https://issm.jpl.nasa.gov/download/.
 
 ## Videos of future evolution
-The following animations are supplied along with the article, and can be downloaded from the videos folder (permalink Zenodo TO BE ADDED)
+The following animations are supplied along with the article, and can be downloaded from the videos folder (permalink Zenodo TO BE ADDED). These are available in .avi and .mp4 formats. The latter works best with PowerPoint.
 
 – Supplementary video 1: Modelled ice-thickness evolution 2021–2100 (ECEARTH/CCLM, RCP4.5).
 
