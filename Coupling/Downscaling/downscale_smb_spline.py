@@ -302,12 +302,15 @@ def downscale_mb_grid(da_monthly_mb, ds_dem, ds_dem_hr, ds_glfrac, ds_glfrac_hr)
 
 #%% Read files and run downscaling function.
 
+# def run_smb_downscaling(start_yr, end_yr):
 def run_smb_downscaling(start_yr, end_yr, path_smb, model_string):
         
     # Filepath and filenames of DEMs and SMB files.
     filepath = '/uio/hypatia/geofag-personlig/geohyd-staff/henninma/issm/trunk-jpl/projects/jost/Coupling/'
     filepath_jost = '/uio/hypatia/geofag-personlig/geohyd-staff/henninma/issm/trunk-jpl/projects/jost/'
     filepath_output_ds = '/uio/hypatia/geofag-personlig/geohyd-staff/henninma/issm/trunk-jpl/projects/jost/Coupling/Downscaling/Output/'
+#     filepath = '/uio/kant/geo-geofag-u1/henninma/issm/trunk-jpl/projects/jost/Coupling/'
+#     filepath_output_ds = '/uio/kant/geo-geofag-u1/henninma/issm/trunk-jpl/projects/jost/Coupling/OutputDownscaled/Test/'
 
     # Make new folder in directory with 
 #     newdir = os.path.join(filepath_output_ds, datetime.now().strftime('%Y-%m-%d_%H_%M_%S'))
@@ -315,15 +318,15 @@ def run_smb_downscaling(start_yr, end_yr, path_smb, model_string):
 #     newdir = filepath_output_ds + 'Test'
 
     filename_coarse_dem = 'Downscaling/base_files/dem_JOB_ref_SMB_1km_UTM32.nc'
-    filename_base_fine_dem = 'Downscaling/base_files/dem2020_JOB_ref_SMB_100m_UTM32.nc'
+    filename_base_fine_dem = 'Downscaling/base_files/dem1966_JOB_ref_SMB_100m_UTM32.nc'
+#     filename_issm_output_dem = 'issmoutput.nc'
     filename_issm_output_dem = ('Output/' + model_string + 'issmoutput.nc')
     
     filename_coarse_glfrac = 'Downscaling/base_files/gl_frac_dummy_JOB_ref_SMB_1km_UTM32.nc'
     filename_fine_glfrac = 'Downscaling/base_files/gl_frac_dummy_JOB_ref_SMB_100m_UTM32.nc'
 
+#     filename_monthly_mb_coarse = 'Downscaling/base_files/monthly_refmb_JOB_1km_1960_2020_UTM32.nc'
     filename_monthly_mb_coarse = (filepath_jost + path_smb)
-#     filename_monthly_mb_coarse = (filepath_jost + path_smb + 'monthly_refmb_JOB_1km_2021_2100_UTM32.nc')
-#     filename_monthly_mb_coarse = 'Downscaling/base_files/monthly_refmb_JOB_1km_2021_2100_UTM32.nc'
 #     filename_monthly_mb_coarse = 'Downscaling/base_files/monthly_refmb_JOB_1km_1960_2020_UTM32_Jan24_Pcorr_glacieronly.nc'
 
     # Read DEMs and SMB files as xarray Datasets.
@@ -356,6 +359,7 @@ def run_smb_downscaling(start_yr, end_yr, path_smb, model_string):
     ds_fine_dem = ds_issm_dem.combine_first(ds_base_fine_dem)
         
     # Coarse resolution mass balance data.
+#     with xr.open_dataset(filepath + filename_monthly_mb_coarse) as ds_mb_coarse_out:
     with xr.open_dataset(filename_monthly_mb_coarse) as ds_mb_coarse_out:
         ds_mb_coarse = ds_mb_coarse_out
         
@@ -372,19 +376,22 @@ def run_smb_downscaling(start_yr, end_yr, path_smb, model_string):
     # Convert to Dataset
     ds_monthly_mb_fine = da_monthly_mb_fine.to_dataset(promote_attrs=True, name='mb_monthly')
 
+
+
     # Save modelled surface and modelled mb
     filename_monthly_mb_fine = model_string + 'smb_100m_' + str(start_yr) + '_' + str(end_yr) + '.nc'
     filename_surface_modelled = model_string + 'surface_modelled_100m_' + str(start_yr-1) + '.nc'
     filename_smb_output = model_string + 'smboutput.nc'
-    
+
     # Save one version of surface elevation, and two versions
     # of mass balance (one for storage and one for ISSM input).
 #     ds_fine_dem.to_netcdf(newdir + '/' + filename_surface_modelled)
 #     ds_monthly_mb_fine.to_netcdf(newdir + '/' + filename_monthly_mb_fine)
-
+    
     ds_fine_dem.to_netcdf(filepath_output_ds + filename_surface_modelled)
     ds_monthly_mb_fine.to_netcdf(filepath_output_ds + filename_monthly_mb_fine)
     ds_monthly_mb_fine.to_netcdf(filepath + '/Output/' + filename_smb_output)
+#     ds_monthly_mb_fine.to_netcdf(filepath + filename_smb_output)
 # 
 #     with open(filepath_output_ds + filename_surface_modelled, 'wb') as f:  ds_fine_dem.to_netcdf(f)
 
@@ -400,6 +407,7 @@ def run_smb_downscaling(start_yr, end_yr, path_smb, model_string):
 # Run in matlab by specifying:
 # run = pyrunfile("downscale_smb.py","done", start_year=XXXX, end_year=YYYY)
 
+# run = run_smb_downscaling(start_year, end_year)
 run = run_smb_downscaling(start_year, end_year, path_smb, model_string)
 
 #%%
