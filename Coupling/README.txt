@@ -5,6 +5,8 @@ These downscaling scripts are in turn called from issmcoupler.m
 issmcoupler.m is in turn called from runme.m
 *********
 
+** Files included in base_files/ **
+
 * dem1966_JOB_ref_SMB_100m_UTM32.nc - DTM 1966 at 100 m resolution of ice-surface and land topography, derived from topographic maps and aerial photography.
 For details, see the underlying paper Åkesson et al.
 
