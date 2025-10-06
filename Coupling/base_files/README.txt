@@ -20,7 +20,7 @@ For details, see the underlying paper Åkesson et al.
 Precipitation factor corrected for both ice-covered and ice-free areas. For details, see Sjursen et al. 2025 (doi: https://doi.org/10.1017/aog.2024.41) 
 
 * monthly_refmb_JOB_1km_1960_2020_UTM32_Jan24_Pcorr_glacieronly -  simulated monthly surface mass balance at 1 km resolution 1960-2020.
-Precipitation factor corrected for both ice-covered areas. For details, see Sjursen et al. 2025 (doi: https://doi.org/10.1017/aog.2024.41) 
+Precipitation factor corrected for ice-covered areas. For details, see Sjursen et al. 2025 (doi: https://doi.org/10.1017/aog.2024.41) 
 
 * monthly_refmb_JOB_1km_2021_2100_UTM32.nc - simulated monthly surface mass balance at 1 km resolution 2021-2100,
 using temperature and precipitation fields from the climate model combination ECEARTH/CCLM.
