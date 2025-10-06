@@ -1,6 +1,6 @@
 *********
-Datasets and model output required for downscaling of surface mass balance to an evolving ice geometry (dynamics).
-The downscaling process is done within the python scripts downscale_smb_spline.py and downscale_smb_spline_future.py
+Model code, datasets and model output required for coupling (downscaling) of surface mass balance to an evolving ice geometry (dynamics).
+The downscaling process is done within the python scripts downscale_smb_spline.py and downscale_smb_spline_future.py, located in the Downscaling directory.
 These downscaling scripts are in turn called from issmcoupler.m
 issmcoupler.m is in turn called from runme.m
 *********
