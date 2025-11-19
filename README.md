@@ -1,7 +1,7 @@
 # Model code and metadata supporting the publication of the Åkesson et al. paper about Jostedalsbreen ice cap
 Model code and metadata supporting the paper about Jostedalsbreen ice cap by Åkesson et al. 2025 in The Cryosphere.
 
-Åkesson, H., Sjursen, K. H., Vikhamar Schuler, T., Dunse, T., Andreassen, L. M., Kusk Gillespie, M., Robson, B. A., Schellenberger, T., and Clement Yde, J.: Recent history and future demise of Jostedalsbreen, the largest ice cap in mainland Europe, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2025-467, 2025. REFERENCE TO BE UPDATED
+Åkesson, H., Sjursen, K. H., Vikhamar Schuler, T., Dunse, T., Andreassen, L. M., Kusk Gillespie, M., Robson, B. A., Schellenberger, T., and Clement Yde, J.: Recent history and future demise of Jostedalsbreen, the largest ice cap in mainland Europe, The Cryosphere, 19, 5871–5902, https://doi.org/10.5194/tc-19-5871-2025, 2025.
 
 Please contact the corresponding author Henning Åkesson (henning.akesson [at] geo.uio.no) for any scientific or software-related questions.
 
